@@ -1,4 +1,5 @@
 from transformers import AutoTokenizer, AutoModel
+import os
 import torch
 import torch.nn as nn
 import pandas as pd
@@ -23,28 +24,33 @@ class SimpleClassifier(nn.Module):
 class Parameters():
 
 
-    def __init__(self, epoch, Bertlayernumber):
-        self.numepoch=epoch
+    def __init__(self):
+
+        self.numepoch=10
+        self.tokenizer = AutoTokenizer.from_pretrained("bert-base-multilingual-cased")
+        self.BertModel = AutoModel.from_pretrained("bert-base-multilingual-cased", output_hidden_states=True, return_dict=True)
+        self.BertModel.eval()
+
+        self.criterion = self.createLoss()
+        self.optimizer = self.createOptimizer()
+        self.scheduler = self.creatScheduler()
+
+    def configure(self, BatchSize, Bertlayernumber):
+        self.Net = SimpleClassifier(
+            input_dim=768,
+            output_dim=6,
+            hidden_dim=50
+        )
+        self.BatchSize=BatchSize
         if Bertlayernumber>13:
             self.Bertlayernumber = 13
         elif Bertlayernumber<0:
             self.Bertlayernumber = 0
         else:
             self.Bertlayernumber=Bertlayernumber
-        self.tokenizer = AutoTokenizer.from_pretrained("bert-base-multilingual-cased")
-        self.BertModel = AutoModel.from_pretrained("bert-base-multilingual-cased", output_hidden_states=True, return_dict=True)
-        self.BertModel.eval()
-        self.Net = SimpleClassifier(
-        input_dim=768,
-        output_dim=6,
-        hidden_dim=50
-    )
-        self.Net
-        self.Net=self.Net.cuda()
-        self.criterion = self.createLoss()
-        self.optimizer = self.createOptimizer()
-        self.scheduler = self.creatScheduler()
 
+        self.Net
+        self.Net = self.Net.cuda()
 
 
     def casetonumber(self, case):
@@ -71,9 +77,8 @@ class Parameters():
         return tokennumber
 
     def preparedata(self):
-
-        train_tsv = pd.read_csv('train.tsv', na_filter=None, quoting=3, sep="\t")
-        dev_tsv = pd.read_csv('dev.tsv', na_filter=None, quoting=3, sep="\t")
+        train_tsv = pd.read_csv('C:\BERT\\transformers2020.11.25\\train.tsv', na_filter=None, quoting=3, sep="\t")
+        dev_tsv = pd.read_csv('C:\BERT\\transformers2020.11.25\\dev.tsv', na_filter=None, quoting=3, sep="\t")
         training_data = []
         test_data = []
 
@@ -94,8 +99,8 @@ class Parameters():
             test_data[i].append(output.hidden_states[self.Bertlayernumber][0][self.gettokennumber(obj[0], obj[2])].detach())
             test_data[i].append(self.casetonumber(obj[3]))
 
-        self.trainloader = torch.utils.data.DataLoader(training_data, batch_size=16, shuffle=True)
-        self.testloader = torch.utils.data.DataLoader(test_data, batch_size=16, shuffle=True)
+        self.trainloader = torch.utils.data.DataLoader(training_data, batch_size=self.BatchSize, shuffle=True)
+        self.testloader = torch.utils.data.DataLoader(test_data, batch_size=self.BatchSize, shuffle=True)
 
     def createLoss(self):
         return nn.CrossEntropyLoss()

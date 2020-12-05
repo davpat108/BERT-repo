@@ -1,0 +1,3 @@
+defaults:
+  - BatchSizes: Batch16
+  - db: Layer0

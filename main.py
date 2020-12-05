@@ -4,15 +4,15 @@ import torch
 
 import hydra
 from parameters import Parameters
+from omegaconf import DictConfig, OmegaConf
 
 
 
 
 
-
-
-if __name__ == "__main__":
-    param=Parameters(epoch=10, Bertlayernumber=2)
+@hydra.main(config_path="conf", config_name="config")
+def BertMainFunction(cfg: DictConfig):
+    param.configure(BatchSize=cfg.BatchSizes.BatchSize, Bertlayernumber=cfg.db.Bertlayer)
     train_accs = []
     train_losses = []
     val_accs = []
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     best_acc = 0
     torch.manual_seed(32)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark=False
+    torch.backends.cudnn.benchmark = False
     param.preparedata()
 
     param.creatScheduler()
@@ -41,3 +41,9 @@ if __name__ == "__main__":
             best_acc = acc
             print("Best model so far")
             torch.save(param.Net, "model.pth")
+
+
+
+if __name__ == "__main__":
+    param=Parameters()
+    BertMainFunction()
