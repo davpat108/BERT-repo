@@ -31,9 +31,6 @@ class Parameters():
         self.BertModel = AutoModel.from_pretrained("bert-base-multilingual-cased", output_hidden_states=True, return_dict=True)
         self.BertModel.eval()
 
-        self.criterion = self.createLoss()
-        self.optimizer = self.createOptimizer()
-        self.scheduler = self.creatScheduler()
 
     def configure(self, BatchSize, Bertlayernumber):
         self.Net = SimpleClassifier(
@@ -51,6 +48,9 @@ class Parameters():
 
         self.Net
         self.Net = self.Net.cuda()
+        self.criterion = self.createLoss()
+        self.optimizer = self.createOptimizer()
+        self.scheduler = self.creatScheduler()
 
 
     def casetonumber(self, case):
@@ -64,6 +64,7 @@ class Parameters():
         }
         return switch.get(case, "Invalid case")
 
+
     def gettokennumber(self, sentence, wordnumber):
 
         wordlist = sentence.split(" ")
@@ -76,11 +77,13 @@ class Parameters():
                 break
         return tokennumber
 
+
     def preparedata(self):
         train_tsv = pd.read_csv('C:\BERT\\transformers2020.11.25\\train.tsv', na_filter=None, quoting=3, sep="\t")
         dev_tsv = pd.read_csv('C:\BERT\\transformers2020.11.25\\dev.tsv', na_filter=None, quoting=3, sep="\t")
         training_data = []
         test_data = []
+
 
         for i, obj in enumerate(train_tsv.values, 0):
             input = self.tokenizer(obj[0], padding=True,

@@ -41,6 +41,9 @@ def BertMainFunction(cfg: DictConfig):
             best_acc = acc
             print("Best model so far")
             torch.save(param.Net, "model.pth")
+            f=open("log.txt", "a")
+            f.write("RUN: BatchSize"+str(cfg.BatchSizes.BatchSize)+ " BertLayer"+ str(cfg.db.Bertlayer)+str(acc)+"\n")
+            f.close()
 
 
 
